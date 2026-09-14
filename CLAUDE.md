@@ -23,7 +23,7 @@ A Q&A interface over Reuters USA-ELECTION wire coverage of the 2026 U.S. midterm
 | Embeddings | OpenAI `text-embedding-3-small` (1536 dims) |
 | Synthesis | Anthropic `claude-sonnet-4-6` |
 | Backend | Flask on Vercel |
-| Auth | Magic-link 6-character code to `@thomsonreuters.com`, 3-hour expiry (shared `magic_tokens` table) |
+| Auth | Magic-link 6-character code to `@thomsonreuters.com`, 3-hour expiry (shared `magic_tokens` table), sent via Resend from `midterm@andysullivan.net` |
 | Frontend | Single-page HTML/JS, Reuters brand styling |
 | Refresh | GitHub Actions cron, 3:30am UTC nightly (offset from trump-background's 3:00am and iran-archive's 3:15am) |
 
@@ -95,7 +95,7 @@ python api/index.py
 # -> http://localhost:5003
 ```
 
-Log in with any `@thomsonreuters.com` email. A 6-character code is emailed via Gmail SMTP (same sender as iran-archive).
+Log in with any `@thomsonreuters.com` email. A 6-character code is emailed via Resend, from `midterm@andysullivan.net`.
 
 **Known issue:** the local `ANTHROPIC_API_KEY` in `.env` hit a `403 permission_error — Access restricted by network policy` when called from Andy's machine directly (via `query.py`). This is why the app needs to be deployed to Vercel — the key's network allow-list likely covers Vercel's egress IPs (since iran-archive works fine there) but not arbitrary local/VPN traffic. Confirm this resolves once deployed; if `/api/query` still 403s from Vercel, the key's allow-list needs to be widened by whoever manages the Anthropic Console org.
 
@@ -112,7 +112,7 @@ Set environment variables in the Vercel dashboard (Project Settings → Environm
 - `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
 - `REUTERS_CLIENT_ID` / `REUTERS_CLIENT_SECRET` (not needed at query time, but harmless to set)
-- `EMAIL_ADDRESS` / `EMAIL_PASSWORD` / `SMTP_SERVER` / `SMTP_PORT`
+- `RESEND_API_KEY` / `EMAIL_FROM` (defaults to `Reuters Midterm Archive <midterm@andysullivan.net>` if unset)
 - `SECRET_KEY`
 
 `vercel.json` is minimal (`{"version": 2}`) -- Vercel auto-detects `api/index.py` as a Python serverless function via its standard convention. No explicit routes/build config needed (same as iran-archive).

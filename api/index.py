@@ -12,11 +12,8 @@ import sys
 import time
 import secrets
 import string
-import smtplib
 import logging
 from datetime import datetime, timedelta, date as date_
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from functools import wraps
 from pathlib import Path
 
@@ -37,10 +34,8 @@ DATABASE_URL      = os.getenv('DATABASE_URL')
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 OPENAI_API_KEY    = os.getenv('OPENAI_API_KEY')
 SECRET_KEY        = os.getenv('SECRET_KEY', secrets.token_hex(32))
-EMAIL_ADDRESS     = os.getenv('EMAIL_ADDRESS')
-EMAIL_PASSWORD    = os.getenv('EMAIL_PASSWORD')
-SMTP_SERVER       = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
-SMTP_PORT         = int(os.getenv('SMTP_PORT', 587))
+RESEND_API_KEY    = os.getenv('RESEND_API_KEY')
+EMAIL_FROM        = os.getenv('EMAIL_FROM', 'Reuters Midterm Archive <midterm@andysullivan.net>')
 
 EMBEDDING_MODEL = "text-embedding-3-small"
 CLAUDE_MODEL    = "claude-sonnet-4-6"
@@ -168,17 +163,22 @@ body {{ font-family: Georgia, serif; line-height: 1.6; color: #000; background: 
 <div class="footer">For Thomson Reuters journalists only.</div>
 </div></body></html>"""
 
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = 'Reuters Midterm Archive — Login Code'
-        msg['From']    = f'Reuters Midterm Archive <{EMAIL_ADDRESS}>'
-        msg['To']      = email
-        msg.attach(MIMEText(text_body, 'plain'))
-        msg.attach(MIMEText(html_body, 'html'))
-
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            server.send_message(msg)
+        r = httpx.post(
+            'https://api.resend.com/emails',
+            headers={
+                'Authorization': f'Bearer {RESEND_API_KEY}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'from':    EMAIL_FROM,
+                'to':      [email],
+                'subject': 'Reuters Midterm Archive — Login Code',
+                'text':    text_body,
+                'html':    html_body,
+            },
+            timeout=30,
+        )
+        r.raise_for_status()
         return True
     except Exception as e:
         log.error(f"Email send failed: {e}")

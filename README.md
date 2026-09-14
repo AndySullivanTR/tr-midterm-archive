@@ -33,9 +33,9 @@ vercel deploy --prod
 ```
 
 Then in the Vercel dashboard (Project Settings -> Environment Variables), set:
-`DATABASE_URL`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `REUTERS_CLIENT_ID`, `REUTERS_CLIENT_SECRET`, `EMAIL_ADDRESS`, `EMAIL_PASSWORD`, `SMTP_SERVER`, `SMTP_PORT`, `SECRET_KEY` -- all already populated in your local `.env`, just copy them over.
+`DATABASE_URL`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `REUTERS_CLIENT_ID`, `REUTERS_CLIENT_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `SECRET_KEY` -- all already populated in your local `.env`, just copy them over.
 
-Once deployed, log in at the Vercel URL with any `@thomsonreuters.com` email (6-character code emailed via Gmail, same sender as iran-archive).
+Once deployed, log in at the Vercel URL with any `@thomsonreuters.com` email (6-character code emailed via Resend, from `midterm@andysullivan.net`).
 
 ## Sharing with colleagues
 
