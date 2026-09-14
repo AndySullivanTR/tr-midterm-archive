@@ -64,9 +64,11 @@ Same shape as iran-archive's `ia_reuters_stories`: `uri` (PK), `headline`, `slug
 
 ## Reuters ingest (`refresh.py`)
 
-- Slug filter: `(^|-)USA-ELECTION(-|/|$)` — matches `USA-ELECTION`, `USA-ELECTION/TEXAS`, `USA-ELECTION-2026`, etc.
+- Slug filter, two tiers, both evaluated via `is_relevant_story()`:
+  - `USA-ELECTION` family (`(^|-)USA-ELECTION(-|/|$)`, e.g. `USA-ELECTION`, `USA-ELECTION/TEXAS`, `USA-ELECTION-2026`) — always ingested, no further check needed.
+  - `USA-TRUMP` family (`(^|-)USA-TRUMP(-|/|$)`, e.g. `USA-TRUMP/FED`, `USA-TRUMP-IRELAND`) — ingested **only if** headline/fragment/slug also matches `ELECTION_KEYWORD_RE` (midterm, primary, ballot, candidate, district, runoff, endorse, campaign, nominee, etc.). Added Sept 2026: `topicCodes=["VOTE"]` alone reaches `USA-TRUMP`-slugged stories, but most are unrelated to the midterms (Fed rate decisions, tariffs, golf, foreign affairs) — `VOTE` is apparently applied broadly to anything POTUS/politics-adjacent. Verified against live data (Jan–Sept 2026): the keyword gate keeps 33 of 97 `USA-TRUMP`+`VOTE` stories, and the kept set is genuinely midterm-relevant (mail-in ballot lawsuits, "vows to hit campaign trail... in tight midterms," the shutdown-before-midterms bill) while the dropped set is the Ireland/Fed/golf noise.
+- `USA-CONGRESS` is still **not** ingested — no reporter need identified yet. Same approach (keyword-gated `USA-TRUMP`-style widen) would apply if/when needed.
 - `topicCodes = ["VOTE"]` — confirmed via `probe_election_archive.py` against two known-busy primary days (PA-10 May 19, Iowa June 2 2026). `VOTE` is a narrow, election-specific editorial tag; it matched the same or more `USA-ELECTION`-slugged stories than the much broader `US`/`POL` country/politics tags did, with far less pagination.
-- Deliberately **not** ingesting `USA-CONGRESS` or `USA-TRUMP` slug families — they're reachable only through `US`/`POL`, which are mostly non-election noise (routine legislative business, day-to-day Trump administration news). Revisit if a reporter needs that coverage; the fix would be a keyword-filtered pull under `US`+`POL`, not a full sweep.
 
 CLI:
 ```bash

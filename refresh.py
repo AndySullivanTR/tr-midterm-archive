@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 """
-Refresh: fetch USA-ELECTION stories from Reuters Connect and add them to
-Neon PostgreSQL. Mirrors iran-archive/refresh.py.
+Refresh: fetch USA-ELECTION (and election-relevant USA-TRUMP) stories from
+Reuters Connect and add them to Neon PostgreSQL. Mirrors iran-archive/refresh.py.
 
-Slugs included: anything matching (^|-)USA-ELECTION(-|/|$), e.g.
-USA-ELECTION, USA-ELECTION/TEXAS, USA-ELECTION-2026.
+Slugs included:
+  - Anything matching (^|-)USA-ELECTION(-|/|$), e.g. USA-ELECTION,
+    USA-ELECTION/TEXAS, USA-ELECTION-2026. Always included (no keyword check
+    needed -- the slug alone is a reliable election signal).
+  - Anything matching (^|-)USA-TRUMP(-|/|$), e.g. USA-TRUMP/FED,
+    USA-TRUMP-IRELAND, but ONLY if headline/fragment/slug also contains an
+    election-ish keyword (see ELECTION_KEYWORD_RE). Confirmed via manual
+    probe (Sept 2026, 30-day window) that topicCodes=["VOTE"] alone reaches
+    USA-TRUMP-slugged stories, but most of them are unrelated to the
+    midterms -- Fed rate decisions, tariffs, golf -- carrying VOTE only
+    because it's a broad POTUS/politics tag. The keyword check keeps that
+    noise out of the corpus while still catching genuine Trump-midterm
+    coverage (rallies, endorsements, candidate comments, etc.).
 
 TOPIC_CODES confirmed via probe_election_archive.py: ["VOTE"] alone reliably
 surfaces USA-ELECTION-slugged stories with far less pagination than US/POL
@@ -54,6 +65,20 @@ LIMIT = 100
 # against probe_election_archive.py output if match rate looks off.
 USA_ELECTION_SLUG_RE = re.compile(r'(^|-)USA-ELECTION(-|/|$)', re.IGNORECASE)
 
+# Matches USA-TRUMP, USA-TRUMP/FED, USA-TRUMP-IRELAND, etc. Included only
+# when ELECTION_KEYWORD_RE also matches -- see module docstring.
+USA_TRUMP_SLUG_RE = re.compile(r'(^|-)USA-TRUMP(-|/|$)', re.IGNORECASE)
+
+# Keyword gate for USA-TRUMP stories: checked against headline + fragment +
+# slug. Keeps out Trump coverage that's tagged VOTE but isn't actually about
+# the midterms (Fed policy, tariffs, golf, foreign affairs, etc.).
+ELECTION_KEYWORD_RE = re.compile(
+    r'\b(midterms?|primaries|primary|ballots?|candidac(?:y|ies)|candidates?|'
+    r'districts?|runoffs?|endors(?:e|ed|ement|ing)|campaigns?|nominees?|'
+    r'nominations?)\b',
+    re.IGNORECASE,
+)
+
 # CONFIRMED via probe_election_archive.py against two known-busy primary
 # days (PA-10 May 19, Iowa June 2 2026). VOTE alone matched the same or more
 # USA-ELECTION-slugged stories than US/POL did, despite US/POL having
@@ -66,6 +91,22 @@ TOPIC_CODES = ["VOTE"]
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def is_relevant_story(item):
+    """True if a search result should be ingested.
+
+    USA-ELECTION slugs are always relevant. USA-TRUMP slugs are relevant
+    only if the headline/fragment/slug also carries an election-ish
+    keyword -- see ELECTION_KEYWORD_RE and the module docstring for why.
+    """
+    slug = item.get('slug') or ''
+    if USA_ELECTION_SLUG_RE.search(slug):
+        return True
+    if USA_TRUMP_SLUG_RE.search(slug):
+        text = f"{item.get('headLine', '')} {item.get('fragment', '')} {slug}"
+        return bool(ELECTION_KEYWORD_RE.search(text))
+    return False
 
 
 # =============================================================================
@@ -214,7 +255,7 @@ class ReutersAPI:
 
             matching = [
                 i for i in items
-                if USA_ELECTION_SLUG_RE.search(i.get('slug') or '')
+                if is_relevant_story(i)
                 and (i.get('language') or '').lower() == 'en'
                 and i.get('uri') not in seen_uris
             ]
@@ -353,7 +394,7 @@ def main():
         logger.info("Searching Reuters Connect...")
         items = api.search_date_range(date_from, date_to)
 
-    logger.info(f"Found {len(items)} candidate stories matching {USA_ELECTION_SLUG_RE.pattern}")
+    logger.info(f"Found {len(items)} candidate stories (USA-ELECTION, plus election-relevant USA-TRUMP)")
 
     if not items:
         logger.info("Nothing to do.")

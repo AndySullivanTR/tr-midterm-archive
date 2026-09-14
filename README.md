@@ -8,7 +8,7 @@ Two ways to use it:
 
 ## What it does
 
-1. `refresh.py` pulls Reuters wire stories tagged `USA-ELECTION` (matches `(^|-)USA-ELECTION(-|/|$)`) via `topicCodes=["VOTE"]` into `ea_reuters_stories` with OpenAI embeddings.
+1. `refresh.py` pulls Reuters wire stories via `topicCodes=["VOTE"]`, matching `USA-ELECTION`-slugged stories (`(^|-)USA-ELECTION(-|/|$)`) unconditionally, plus `USA-TRUMP`-slugged stories (`(^|-)USA-TRUMP(-|/|$)`) that also carry an election-ish keyword in their headline/fragment/slug -- into `ea_reuters_stories` with OpenAI embeddings.
 2. Ask plain-English questions -- e.g. "Have we covered Georgia's new voter ID law?" -- and get a Reuters-style answer with numbered citations, synthesized by Claude from the archive.
 
 ## Setup (already done)
@@ -48,4 +48,5 @@ The Vercel URL works for anyone with a `@thomsonreuters.com` email -- no separat
 ## Design decisions (see CLAUDE.md for full detail)
 
 - **`topicCodes=["VOTE"]`, not `US`/`POL`**: confirmed via probing two known-busy primary days. `VOTE` is a narrow election-specific tag; `US`/`POL` are broad country/politics tags that would require paging through 15-25x more volume for the same recall.
-- **`USA-CONGRESS` and `USA-TRUMP` slugs are out of scope for now**: they're not reachable through `VOTE`, and pulling them via `US`/`POL` would mean mostly non-election noise (routine legislative business, day-to-day Trump news). Can revisit with a keyword-filtered approach if needed.
+- **`USA-TRUMP` slugs are ingested, gated by an election keyword check**: `VOTE` alone reaches `USA-TRUMP`-slugged stories, but most are unrelated to the midterms (Fed rates, tariffs, golf) -- `VOTE` is applied broadly to POTUS/politics content. A keyword filter (midterm, primary, ballot, candidate, district, runoff, endorse, campaign, nominee) keeps the noise out; verified against real data (33 of 97 kept, Jan-Sept 2026).
+- **`USA-CONGRESS` slugs are still out of scope for now**: no reporter need identified yet. Same keyword-gated approach could extend to it if needed.
