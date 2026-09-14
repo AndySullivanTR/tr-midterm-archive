@@ -435,7 +435,8 @@ LOGIN_HTML = """<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, 'Times New Roman', serif; background: #f4f8f4; color: #212223; line-height: 1.6; }
+        body { font-family: Georgia, 'Times New Roman', serif; background: #f4f8f4; color: #212223; line-height: 1.6; position: relative; }
+        body::before { content: ''; position: fixed; inset: 0; background-image: url('/bg.jpg'); background-size: cover; background-position: center top; opacity: 0.25; z-index: -1; pointer-events: none; }
         .container { max-width: 480px; margin: 60px auto; padding: 20px; }
         header { border-top: 4px solid #d64000; border-bottom: 1px solid #ccc; padding: 20px 0; margin-bottom: 30px; }
         h1 { font-size: 26px; font-weight: 700; color: #000; font-family: 'Reem Kufi', sans-serif; }
@@ -521,7 +522,8 @@ MAIN_HTML = """<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, 'Times New Roman', serif; background: #f4f8f4; color: #212223; line-height: 1.6; }
+        body { font-family: Georgia, 'Times New Roman', serif; background: #f4f8f4; color: #212223; line-height: 1.6; position: relative; }
+        body::before { content: ''; position: fixed; inset: 0; background-image: url('/bg.jpg'); background-size: cover; background-position: center top; opacity: 0.25; z-index: -1; pointer-events: none; }
         .container { max-width: 860px; margin: 0 auto; padding: 20px; }
         header { border-top: 4px solid #d64000; border-bottom: 1px solid #ccc; padding: 20px 0; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
         h1 { font-size: 28px; font-weight: 700; font-family: 'Reem Kufi', sans-serif; }
@@ -580,7 +582,7 @@ MAIN_HTML = """<!DOCTYPE html>
     </div>
 
     <div class="corpus-desc" id="corpus-desc">Loading corpus stats...</div>
-    <div class="corpus-note">Built by Andy Sullivan for Reuters. Powered by Claude AI. Feedback welcome at andy.sullivan (at) thomsonreuters.com</div>
+    <div class="corpus-note">Built by Andy Sullivan for Reuters. Powered by Claude AI. Feedback welcome at andy.sullivan (at) thomsonreuters.com<br>Photo by Callaghan O'Hare/Reuters</div>
 
     <div class="loading" id="loading">Searching archive...</div>
     <div class="error-msg" id="error"></div>

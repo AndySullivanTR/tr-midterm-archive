@@ -136,7 +136,7 @@ Trigger manually from the Actions UI to verify after the first deploy.
 ## Code notes
 
 - Flask app and HTML templates are inline in `api/index.py` (`LOGIN_HTML`, `MAIN_HTML`), same as iran-archive, for Vercel serverless deployment.
-- No background watermark image (iran-archive's `bg.jpg`) -- omitted for simplicity in v1. Can be added later by dropping an image into a `public/` folder and restoring the `body::before` CSS rule iran-archive uses, if wanted.
+- Background watermark image: `public/bg.jpg` (Dallas photo, credit Callaghan O'Hare/Reuters, noted in the `.corpus-note` footer), same `body::before` CSS rule as iran-archive (`opacity: 0.25`, `background-size: cover`, `z-index: -1`) in both `LOGIN_HTML` and `MAIN_HTML`. Served from Vercel's static `public/` convention.
 - `REUTERS_TOP_K = 14` controls how many sources feed the synthesis prompt. Single corpus (no Trump-statements cross-reference like iran-archive has) -- full budget always goes to Reuters.
 - The hybrid search SQL is in `search_reuters()`, same 0.7 × vector + 0.3 × FTS shape as iran-archive.
 - `ARCHIVE_START_DATE = "2026-01-01"` is the default lower bound for queries.
