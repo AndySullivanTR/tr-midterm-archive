@@ -437,7 +437,7 @@ LOGIN_HTML = """<!DOCTYPE html>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Georgia, 'Times New Roman', serif; background: #f4f8f4; color: #212223; line-height: 1.6; position: relative; }
         body::before { content: ''; position: fixed; inset: 0; background-image: url('/bg.jpg'); background-size: cover; background-position: center top; opacity: 0.25; z-index: -1; pointer-events: none; }
-        .container { max-width: 480px; margin: 60px auto; padding: 20px; }
+        .container { max-width: 480px; margin: 60px auto; padding: 20px 20px 40px; background: #fff; box-shadow: 0 0 24px rgba(0,0,0,0.08); }
         header { border-top: 4px solid #d64000; border-bottom: 1px solid #ccc; padding: 20px 0; margin-bottom: 30px; }
         h1 { font-size: 26px; font-weight: 700; color: #000; font-family: 'Reem Kufi', sans-serif; }
         .subtitle { font-size: 13px; color: #666; margin-top: 4px; }
@@ -525,7 +525,7 @@ MAIN_HTML = """<!DOCTYPE html>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Georgia, 'Times New Roman', serif; background: #f4f8f4; color: #212223; line-height: 1.6; position: relative; }
         body::before { content: ''; position: fixed; inset: 0; background-image: url('/bg.jpg'); background-size: cover; background-position: center top; opacity: 0.25; z-index: -1; pointer-events: none; }
-        .container { max-width: 860px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 860px; margin: 0 auto; padding: 20px 20px 40px; background: #fff; box-shadow: 0 0 24px rgba(0,0,0,0.08); min-height: 100vh; }
         header { border-top: 4px solid #d64000; border-bottom: 1px solid #ccc; padding: 20px 0; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
         h1 { font-size: 28px; font-weight: 700; font-family: 'Reem Kufi', sans-serif; }
         .subtitle { font-size: 13px; color: #666; margin-top: 4px; }
