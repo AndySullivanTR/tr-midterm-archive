@@ -512,6 +512,7 @@ LOGIN_HTML = """<!DOCTYPE html>
 
 
 MAIN_HTML = """<!DOCTYPE html>
+<!-- deploy-test: 2026-09-14 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
