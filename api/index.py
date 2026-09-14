@@ -539,6 +539,7 @@ MAIN_HTML = """<!DOCTYPE html>
         button.submit { background: #d64000; color: #fff; border: none; padding: 10px 22px; font-size: 15px; font-family: Arial, sans-serif; cursor: pointer; align-self: flex-end; white-space: nowrap; }
         button.submit:hover { background: #bf3800; }
         button.submit:disabled { background: #999; cursor: not-allowed; }
+        #new-question-btn:hover { background: #444; }
 
         .corpus-desc { font-size: 13px; color: #666; font-family: Arial, sans-serif; margin-bottom: 6px; line-height: 1.6; border-left: 3px solid #e3e3e3; padding-left: 12px; }
         .corpus-note { font-size: 12px; color: #555; font-family: Arial, sans-serif; margin-bottom: 22px; line-height: 1.5; padding-left: 15px; }
@@ -579,7 +580,10 @@ MAIN_HTML = """<!DOCTYPE html>
 
     <div class="query-row">
         <textarea id="query" placeholder="e.g. Have we covered Georgia's new voter ID law? Which Democratic candidates are running as people of faith? What happened in the PA-10 primary?"></textarea>
-        <button class="submit" id="submit-btn" onclick="runQuery()">Search</button>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="submit" id="submit-btn" onclick="runQuery()">Search</button>
+            <button class="submit" id="new-question-btn" onclick="newQuestion()" style="background:#666">New question</button>
+        </div>
     </div>
 
     <div class="corpus-desc" id="corpus-desc">Loading corpus stats...</div>
@@ -699,6 +703,19 @@ MAIN_HTML = """<!DOCTYPE html>
             btn.disabled = false;
             loading.style.display = 'none';
         }
+    }
+
+    function newQuestion() {
+        document.getElementById('query').value = '';
+        document.getElementById('error').style.display = 'none';
+        document.getElementById('error').textContent = '';
+        document.getElementById('answer-block').style.display = 'none';
+        document.getElementById('answer-block').innerHTML = '';
+        document.getElementById('copy-btn').style.display = 'none';
+        document.getElementById('sources-section').style.display = 'none';
+        document.getElementById('sources-list').innerHTML = '';
+        document.getElementById('stats').textContent = '';
+        document.getElementById('query').focus();
     }
 
     function copyAnswer() {
