@@ -127,9 +127,15 @@ def get_latest_date():
     return result
 
 
-def story_exists(cur, uri):
-    cur.execute("SELECT 1 FROM ea_reuters_stories WHERE uri = %s", (uri,))
-    return cur.fetchone() is not None
+def story_needs_processing(cur, uri):
+    """True if the story is missing entirely, or present but never got an
+    embedding (e.g. a prior run's OpenAI call failed) -- either way it needs
+    to go through the insert/embed path again."""
+    cur.execute("SELECT embedding IS NULL FROM ea_reuters_stories WHERE uri = %s", (uri,))
+    row = cur.fetchone()
+    if row is None:
+        return True
+    return row[0]
 
 
 def insert_story(cur, story, body_text, embedding):
@@ -152,7 +158,12 @@ def insert_story(cur, story, body_text, embedding):
                (uri, headline, slug, fragment, body_text, byline,
                 first_created, reuters_url, topic_codes, embedding)
            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::vector)
-           ON CONFLICT (uri) DO NOTHING""",
+           ON CONFLICT (uri) DO UPDATE SET
+               embedding = EXCLUDED.embedding,
+               body_text = EXCLUDED.body_text,
+               topic_codes = EXCLUDED.topic_codes
+           WHERE ea_reuters_stories.embedding IS NULL
+             AND EXCLUDED.embedding IS NOT NULL""",
         (uri, headline, slug, fragment, body_text, byline,
          first_created, reuters_url, topic_codes, embedding_str)
     )
@@ -409,18 +420,18 @@ def main():
     backfilled = 0
     for item in items:
         uri = item.get('uri')
-        if story_exists(cur, uri):
-            subjects = item.get('subject') or []
-            codes = [s['code'] for s in subjects if s and s.get('code')]
-            if backfill_topic_codes_if_missing(cur, uri, codes):
-                backfilled += 1
-            skipped += 1
+        if story_needs_processing(cur, uri):
+            new_stories.append(item)
             continue
-        new_stories.append(item)
+        subjects = item.get('subject') or []
+        codes = [s['code'] for s in subjects if s and s.get('code')]
+        if backfill_topic_codes_if_missing(cur, uri, codes):
+            backfilled += 1
+        skipped += 1
 
     if backfilled:
         conn.commit()
-    logger.info(f"New stories to add: {len(new_stories)} | Already in DB: {skipped} (topic_codes backfilled: {backfilled})")
+    logger.info(f"New/needing-embedding stories: {len(new_stories)} | Already complete in DB: {skipped} (topic_codes backfilled: {backfilled})")
 
     if not new_stories:
         cur.close()
