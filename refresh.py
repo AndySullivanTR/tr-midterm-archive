@@ -440,6 +440,7 @@ def main():
 
     BATCH_SIZE = 20
     inserted = 0
+    embedding_failures = 0
 
     for i in range(0, len(new_stories), BATCH_SIZE):
         batch = new_stories[i:i + BATCH_SIZE]
@@ -459,6 +460,7 @@ def main():
         except Exception as e:
             logger.error(f"Embedding batch failed: {e}")
             embeddings = [None] * len(batch)
+            embedding_failures += len(batch)
 
         for story, body, embedding in zip(batch, bodies, embeddings):
             try:
@@ -477,6 +479,15 @@ def main():
     conn.close()
 
     logger.info(f"Refresh complete. Inserted: {inserted} | Skipped: {skipped}")
+
+    if embedding_failures:
+        logger.error(
+            f"{embedding_failures} stor{'y' if embedding_failures == 1 else 'ies'} "
+            "inserted without an embedding (OpenAI call failed) -- will be "
+            "retried on the next refresh, but flagging now so the run shows "
+            "as failed."
+        )
+        sys.exit(1)
 
 
 if __name__ == '__main__':
